@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Movies
 {
@@ -6,7 +7,9 @@ namespace Movies
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            MovieCodes.ReadAndGetData();
+            var q = MovieCodes.dictionary;
+            int a = 45;
         }
     }
 }
