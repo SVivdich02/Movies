@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace Movies
 {
-    class MovieCodes
+    class MovieCodes //key  --- IMDB_ID; value --- title movie 
     {
         public static ConcurrentDictionary<string, string> dictionary;// = new ConcurrentDictionary<string, string>();
 
-        public static void ReadAndGetData() // why static?
+        public static Task ReadAndGetData() // why static?
         {
             var output = new BlockingCollection<string>();
             Task task1 = Loader.LoadContentAsync(@"D:\ml-latest\MovieCodes_IMDB.tsv", output);
             dictionary = new ConcurrentDictionary<string, string>();
-            ParseData(output, dictionary).Wait();
+            return ParseData(output, dictionary);
         }
         public static Task ParseData(BlockingCollection<string> output, ConcurrentDictionary<string, string> dictionary)
         {

@@ -7,8 +7,8 @@ namespace Movies
     {
         static void Main(string[] args)
         {
-            MovieCodes.ReadAndGetData();
-            var q = MovieCodes.dictionary;
+            TagScores.ReadAndGet().Wait();
+            var q = TagScores.dict;
             int a = 45;
         }
     }
