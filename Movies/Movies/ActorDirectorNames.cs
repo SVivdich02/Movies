@@ -11,15 +11,15 @@ namespace Movies
     {
         public static ConcurrentDictionary<string, Actor> dictionary = new ConcurrentDictionary<string, Actor>();
 
-        public static Task ReadAndGetData()
+        public static void ReadAndGetData()
         {
             var output = new BlockingCollection<string>();
             Task task1 = Loader.LoadContentAsync(@"D:\ml-latest\ActorsDirectorsNames_IMDB.txt", output);
-            return Parse(output, dictionary);
+            Task.Run(() => Parse(output, dictionary));
         }
         public static Task Parse(BlockingCollection<string> output, ConcurrentDictionary<string, Actor> dictionary)
         {
-            return Task.Factory.StartNew(() =>
+            return new Task(() =>
             {
                 foreach (string str in output.GetConsumingEnumerable())
                 {

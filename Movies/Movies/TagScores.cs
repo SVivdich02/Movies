@@ -9,33 +9,30 @@ namespace Movies
 {
     class TagScores
     {
-        public static ConcurrentDictionary<int, HashSet<int>> dict = new ConcurrentDictionary<int, HashSet<int>>();
+        public static ConcurrentDictionary<int, HashSet<Tag>> dict = new ConcurrentDictionary<int, HashSet<Tag>>();
         
-        public static Task ReadAndGet()
+        public static void ReadAndGet()
         {
             var output = new BlockingCollection<string>();
             Task task1 = Loader.LoadContentAsync(@"D:\ml-latest\TagScores_MovieLens.csv", output);
-            return Parse(output, dict);
+            Parse(output, dict);
         }
         
-        public static Task Parse(BlockingCollection<string> output, ConcurrentDictionary<int, HashSet<int>> dict)
+        public static void Parse(BlockingCollection<string> output, ConcurrentDictionary<int, HashSet<Tag>> dict)
         {
-            return Task.Factory.StartNew(() =>
+            foreach (string str in output.GetConsumingEnumerable())
             {
-                foreach (string str in output.GetConsumingEnumerable())
+                string[] array = str.Split(",");
+                if (Convert.ToDouble(array[2].Replace('.', ',')) >= 0.5)
                 {
-                    string[] array = str.Split(",");
-                    if (Convert.ToDouble(array[2].Replace('.', ',')) >= 0.5)
+                    dict.AddOrUpdate(Convert.ToInt32(array[0]), new HashSet<Tag>(new Tag[] { TagCodes.dictionary[Convert.ToInt32(array[1])] }),
+                    (x, y) =>
                     {
-                        dict.AddOrUpdate(Convert.ToInt32(array[0]), new HashSet<int>(Convert.ToInt32(array[1])),
-                        (x, y) =>
-                        {
-                            y.Add(Convert.ToInt32(array[1]));
-                            return y;
-                        });
-                    }
+                        y.Add(TagCodes.dictionary[Convert.ToInt32(array[1])]);
+                        return y;
+                    });
                 }
-            });
+            }
         }
     }
 }
