@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Movies
 {
-    class ActorDirectorCodes // ключ - айдишник фильма значение - актер объект
+    class ActorDirectorCodes // ключ - айдишник фильма значение - множество актеров
     {
         public static ConcurrentDictionary<string, HashSet<Actor>> dictionary = new ConcurrentDictionary<string, HashSet<Actor>>();
         public static void ReadAndGetData()

@@ -7,15 +7,14 @@ namespace Movies
     {
         static void Main(string[] args)
         {
-            Task task1 = Task.Run(() => MovieLinks.ReadAndGet());
-            Task task2 = Task.Run(() => TagCodes.ReadAndGet());
-            Task.WaitAll(task1, task2);
+            string str = "tt0000004	5	A Good Beer	N	N	N	N	0";
+            int index1 = str.IndexOf("\t");
+            string id = str.Substring(0, index1);
 
-            Task task3 = Task.Run(() => TagScores.ReadAndGet());
-            task3.Wait();
-
-            var q = TagScores.dictionary;
-            int a = 10;
+            int index2 = str.IndexOf("\t", index1 + 1);
+            int index3 = str.IndexOf("\t", index2 + 1);
+            string movieName = str.Substring(index2 + 1, index3 - index2 - 1);
+            int a = 5;
         }
     }
 }
