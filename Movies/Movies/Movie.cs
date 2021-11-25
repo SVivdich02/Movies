@@ -13,6 +13,10 @@ namespace Movies
         public Director Director { get; set; }
         public HashSet<Tag> Tags { get; set; }
         public double Rating { get; set; }
+        public Movie(string name)
+        {
+            Name = name;
+        }
 
     }
 }

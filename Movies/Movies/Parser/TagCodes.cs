@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Movies
 {
-    class TagCodes
+    class TagCodes // ключ tagId значение объект Tag
     {
         public static ConcurrentDictionary<int, Tag> dictionary = new ConcurrentDictionary<int, Tag>();
 
@@ -23,7 +23,7 @@ namespace Movies
             {
                 string[] array = str.Split(",");
                 dictionary.AddOrUpdate(Convert.ToInt32(array[0]), new Tag(array[1]), (x, y) => y);
-            };
+            }
         }
     }
 }

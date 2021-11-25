@@ -7,13 +7,15 @@ namespace Movies
     {
         static void Main(string[] args)
         {
-            Task task1 = Task.Run(() => TagCodes.ReadAndGet());
-            task1.Wait();
-            var q = TagCodes.dictionary;
-            Task task2 = Task.Run(() => TagScores.ReadAndGet());
-            task2.Wait();
-            var q2 = TagScores.dict;
-            int a = 45;
+            Task task1 = Task.Run(() => MovieLinks.ReadAndGet());
+            Task task2 = Task.Run(() => TagCodes.ReadAndGet());
+            Task.WaitAll(task1, task2);
+
+            Task task3 = Task.Run(() => TagScores.ReadAndGet());
+            task3.Wait();
+
+            var q = TagScores.dictionary;
+            int a = 10;
         }
     }
 }

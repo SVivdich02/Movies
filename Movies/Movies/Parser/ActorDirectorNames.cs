@@ -15,18 +15,15 @@ namespace Movies
         {
             var output = new BlockingCollection<string>();
             Task task1 = Loader.LoadContentAsync(@"D:\ml-latest\ActorsDirectorsNames_IMDB.txt", output);
-            Task.Run(() => Parse(output, dictionary));
+            Parse(output, dictionary);
         }
-        public static Task Parse(BlockingCollection<string> output, ConcurrentDictionary<string, Actor> dictionary)
+        public static void Parse(BlockingCollection<string> output, ConcurrentDictionary<string, Actor> dictionary)
         {
-            return new Task(() =>
+            foreach (string str in output.GetConsumingEnumerable())
             {
-                foreach (string str in output.GetConsumingEnumerable())
-                {
-                    string[] array = str.Split("\t");
-                    dictionary.AddOrUpdate(array[0], new Actor(array[1]), (x, y) => y);
-                }
-            });
+                string[] array = str.Split("\t");
+                dictionary.AddOrUpdate(array[0], new Actor(array[1]), (x, y) => y);
+            }
         }
     }
 }

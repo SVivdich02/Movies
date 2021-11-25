@@ -15,21 +15,18 @@ namespace Movies
         {
             var output = new BlockingCollection<string>();
             Task task1 = Loader.LoadContentAsync(@"D:\ml-latest\MovieCodes_IMDB.tsv", output);
-            Task.Run(() => Parse(output, dictionary));
+            Parse(output, dictionary);
         }
-        public static Task Parse(BlockingCollection<string> output, ConcurrentDictionary<string, string> dictionary)
+        public static void Parse(BlockingCollection<string> output, ConcurrentDictionary<string, string> dictionary)
         {
-            return new Task(() =>
+            foreach (string str in output.GetConsumingEnumerable())
             {
-                foreach (string str in output.GetConsumingEnumerable())
+                string[] array = str.Split("\t");
+                if (array[4] == "en")
                 {
-                    string[] array = str.Split("\t");
-                    if (array[4] == "en")
-                    {
-                        dictionary.AddOrUpdate(array[0], array[2], (x, y) => y);
-                    }
+                    dictionary.AddOrUpdate(array[0], array[2], (x, y) => y);
                 }
-            });
+            }
         }
     }
 }
