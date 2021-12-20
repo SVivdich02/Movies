@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,11 +20,78 @@ namespace Movies
 
             Task taskTagScores = Task.WhenAll(taskLinks, taskTagCodes).ContinueWith(x => TagScores.ReadAndGet());
 
+            Task taskMovieCodesDictionary = Task.WhenAll(taskRatings, taskActorCodes, taskTagScores).ContinueWith(x => MovieCodes.ReadAndGetData());
+            taskMovieCodesDictionary.Wait();
 
-            Task taskMovieCodes = Task.WhenAll(taskRatings, taskActorCodes, taskTagScores).ContinueWith(x => MovieCodes.ReadAndGetData());
-            taskMovieCodes.Wait();
-            var q = MovieCodes.dictionary;
+            var movieDictionary = MovieCodes.dictionary;
             int a = 5;
+
+            var actorsDictionary = new ConcurrentDictionary<Actor, HashSet<Movie>>();
+            var directorsDictionary = new ConcurrentDictionary<Director, HashSet<Movie>>();
+            var tagsDictionary = new ConcurrentDictionary<Tag, HashSet<Movie>>();
+
+            Task taskActorsDictionary = Task.Run(() => 
+            {
+                foreach (var movie in movieDictionary)
+                {
+                    var actors = movie.Value.Actors;
+                    foreach (var actor in actors)
+                    {
+                        actorsDictionary.AddOrUpdate(actor,
+                            new HashSet<Movie>(new Movie[] { movie.Value }),
+                            (x, y) =>
+                            {
+                                y.Add(movie.Value);
+                                return y;
+                            });
+                    }
+                }
+            });
+
+            Task taskDirectorsDictionary = Task.Run(() =>
+            {
+                foreach (var movie in movieDictionary)
+                {
+                    var director = movie.Value.Director;
+                    directorsDictionary.AddOrUpdate(director,
+                        new HashSet<Movie>(new Movie[] { movie.Value }),
+                        (x, y) =>
+                        {
+                            y.Add(movie.Value);
+                            return y;
+                        });
+                }
+            });
+            
+            Task taskTagsDictionary = Task.Run(() =>
+            {
+                foreach (var movie in movieDictionary)
+                {
+                    var tags = movie.Value.Tags;
+                    foreach (var tag in tags)
+                    {
+                        tagsDictionary.AddOrUpdate(tag,
+                            new HashSet<Movie>(new Movie[] { movie.Value }),
+                            (x, y) =>
+                            {
+                                y.Add(movie.Value);
+                                return y;
+                            });
+                    }
+                }
+            });
+
+            Task.WaitAll(taskActorsDictionary, taskDirectorsDictionary, taskTagsDictionary);
+
+            using (MovieContext db = new MovieContext())
+            {
+                foreach (var movie in movieDictionary)
+                {
+                    db.Movies.Add(movie.Value);
+                }
+
+                db.SaveChanges();
+            }
         }
     }
 }

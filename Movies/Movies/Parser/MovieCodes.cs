@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Movies
 {
-    class MovieCodes //key  --- IMDB_ID; value --- title movie 
+    class MovieCodes //key  --- IMDB_ID; value --- movie 
     {
         public static BlockingCollection<string> output = new BlockingCollection<string>();
         public static ConcurrentDictionary<string, Movie> dictionary = new ConcurrentDictionary<string, Movie>();
