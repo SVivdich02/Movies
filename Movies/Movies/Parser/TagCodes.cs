@@ -9,15 +9,15 @@ namespace Movies
 {
     class TagCodes // ключ tagId значение объект Tag
     {
+        public static BlockingCollection<string> output = new BlockingCollection<string>();
         public static ConcurrentDictionary<int, Tag> dictionary = new ConcurrentDictionary<int, Tag>();
 
         public static void ReadAndGet()
         {
-            var output = new BlockingCollection<string>();
             Task task1 = Loader.LoadContentAsync(@"D:\ml-latest\TagCodes_MovieLens.csv", output);
-            Parse(output, dictionary);
+            Parse();
         }
-        public static void Parse(BlockingCollection<string> output, ConcurrentDictionary<int, Tag> dictionary)
+        public static void Parse()
         {
             foreach (string str in output.GetConsumingEnumerable())
             {

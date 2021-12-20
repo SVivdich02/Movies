@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace Movies
 {
-    class MovieLinks // ключ MovieID значение IMDB_ID
+    class MovieLinks // MovieID --- IMDB_ID
     {
+        public static BlockingCollection<string> output = new BlockingCollection<string>();
         public static ConcurrentDictionary<string, string> dictionary = new ConcurrentDictionary<string, string>();
         public static void ReadAndGet()
         {
-            var output = new BlockingCollection<string>();
             Task task1 = Loader.LoadContentAsync(@"D:\ml-latest\links_IMDB_MovieLens.csv", output);
-            Parse(output, dictionary);
+            Parse();
         }
-        public static void Parse(BlockingCollection<string> output, ConcurrentDictionary<string, string> dictionary)
+        public static void Parse()
         {
             foreach (string str in output.GetConsumingEnumerable())
             {

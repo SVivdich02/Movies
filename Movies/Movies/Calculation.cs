@@ -10,16 +10,20 @@ namespace Movies
     {
         public static void Method()
         {
-            Task task_Ratings = Task.Run(() => Ratings.ReadAndGet());
-            Task task_ActorNames = Task.Run(() => ActorDirectorNames.ReadAndGetData());
-            Task task_Links = Task.Run(() => MovieLinks.ReadAndGet());
+            Task taskActorNames = Task.Run(() => ActorDirectorNames.ReadAndGetData());
+            Task taskRatings = Task.Run(() => Ratings.ReadAndGet());
+            Task taskTagCodes = Task.Run(() => TagCodes.ReadAndGet());
 
-            Task task_ActorCodes = task_ActorNames.ContinueWith(x => ActorDirectorCodes.ReadAndGetData());
-            Task task_TagCodes = Task.Run(() => TagCodes.ReadAndGet());
+            Task taskActorCodes = taskActorNames.ContinueWith(x => ActorDirectorCodes.ReadAndGetData());
+            Task taskLinks = taskTagCodes.ContinueWith(x => MovieLinks.ReadAndGet());
 
-            Task task_TagScores = Task.WhenAll(task_Links, task_TagCodes).ContinueWith(x => TagScores.ReadAndGet());
+            Task taskTagScores = Task.WhenAll(taskLinks, taskTagCodes).ContinueWith(x => TagScores.ReadAndGet());
 
-            Task task_MovieCodes = Task.WhenAll(task_Ratings, task_ActorCodes, task_TagScores).ContinueWith(x => MovieCodes.ReadAndGetData());
+
+            Task taskMovieCodes = Task.WhenAll(taskRatings, taskActorCodes, taskTagScores).ContinueWith(x => MovieCodes.ReadAndGetData());
+            taskMovieCodes.Wait();
+            var q = MovieCodes.dictionary;
+            int a = 5;
         }
     }
 }

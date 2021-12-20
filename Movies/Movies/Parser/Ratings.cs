@@ -10,16 +10,16 @@ namespace Movies
     class Ratings
     {
         //IMDB_ID
+        public static BlockingCollection<string> output = new BlockingCollection<string>();
         public static ConcurrentDictionary<string, Double> dictionary = new ConcurrentDictionary<string, Double>();
 
         public static void ReadAndGet()
         {
-            var output = new BlockingCollection<string>();
             Task task1 = Loader.LoadContentAsync(@"D:\ml-latest\Ratings_IMDB.tsv", output);
-            Parse(output, dictionary);
+            Parse();
         } 
 
-        public static void Parse(BlockingCollection<string> output, ConcurrentDictionary<string, Double> dictionary)
+        public static void Parse()
         {
             foreach(string str in output.GetConsumingEnumerable())
             {

@@ -3,32 +3,60 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Movies
 {
-    class ActorDirectorCodes // ключ - айдишник фильма значение - множество актеров
+    class ActorDirectorCodes // id movie --- HashSet<Actor>
     {
-        public static ConcurrentDictionary<string, HashSet<Actor>> dictionary = new ConcurrentDictionary<string, HashSet<Actor>>();
+        public static BlockingCollection<string> output = new BlockingCollection<string>();
+        public static ConcurrentDictionary<string, HashSet<Actor>> dictionaryActor = new ConcurrentDictionary<string, HashSet<Actor>>();
+        public static ConcurrentDictionary<string, Director> dictionaryDirector = new ConcurrentDictionary<string, Director>();
         public static void ReadAndGetData()
         {
-            var output = new BlockingCollection<string>();
             Task task1 = Loader.LoadContentAsync(@"D:\ml-latest\ActorsDirectorsCodes_IMDB.tsv", output);
-            Parse(output, dictionary);
+            Parse();
         }
-        public static void Parse(BlockingCollection<string> output, ConcurrentDictionary<string, HashSet<Actor>> dictionary)
+        public static void Parse()
         {
-            foreach(string str in output.GetConsumingEnumerable())
+            Regex regex = new Regex("actor|actress");
+            Regex regexDirector = new Regex("director");
+
+            foreach (string str in output.GetConsumingEnumerable())
             {
-                string[] array = str.Split("\t");
-                if (array[3] == "actor" || array[3] == "actress")
+                if (regex.IsMatch(str))
                 {
-                    dictionary.AddOrUpdate(array[0], new HashSet<Actor>(new Actor[] { ActorDirectorNames.dictionary[array[2]] }),
-                    (x, y) =>
+                    int index1 = str.IndexOf("\t");
+                    int index2 = str.IndexOf("\t", index1 + 1);
+                    int index3 = str.IndexOf("\t", index2 + 1);
+
+                    string id = str.Substring(0, index1);
+                    string idActor = str.Substring(index2 + 1, index3 - index2 - 1);
+
+                    if (ActorDirectorNames.dictionaryActor.ContainsKey(idActor))
                     {
-                        y.Add(ActorDirectorNames.dictionary[array[2]]);
-                        return y;
-                    });
+                        dictionaryActor.AddOrUpdate(id, new HashSet<Actor>(new Actor[] {ActorDirectorNames.dictionaryActor[idActor]}),
+                        (x, y) =>
+                        {
+                            y.Add(ActorDirectorNames.dictionaryActor[idActor]);
+                            return y;
+                        });
+                    }
+                }
+                else if (regexDirector.IsMatch(str))
+                {
+                    int index1 = str.IndexOf("\t");
+                    int index2 = str.IndexOf("\t", index1 + 1);
+                    int index3 = str.IndexOf("\t", index2 + 1);
+
+                    string IMDB_ID = str.Substring(0, index1);
+                    string idDirector = str.Substring(index2 + 1, index3 - index2 - 1);
+
+                    if (ActorDirectorNames.dictionaryDirector.ContainsKey(idDirector))
+                    {
+                        dictionaryDirector.AddOrUpdate(IMDB_ID, ActorDirectorNames.dictionaryDirector[idDirector], (x, y) => y);
+                    }
                 }
             }
         }

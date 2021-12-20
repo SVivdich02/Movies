@@ -14,11 +14,12 @@ namespace Movies
         public Director Director { get; set; }
         public HashSet<Tag> Tags { get; set; }
         public double Rating { get; set; }
-        public Movie(string id, string name, HashSet<Actor> actors, HashSet<Tag> tags, double rating)
+        public Movie(string id, string name, HashSet<Actor> actors, Director director, HashSet<Tag> tags, double rating)
         {
             ID = id;
             Name = name;
             Actors = actors;
+            Director = director;
             Tags = tags;
             Rating = rating;
         }
