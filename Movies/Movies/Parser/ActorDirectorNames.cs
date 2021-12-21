@@ -21,8 +21,8 @@ namespace Movies
         }
         public static void Parse()
         {
-            Regex regex = new Regex("actor|actress|director");
-            
+            Regex regex = new Regex("actor|director");
+
             foreach (string str in output.GetConsumingEnumerable())
             {
                 if (regex.IsMatch(str))

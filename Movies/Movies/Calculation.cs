@@ -18,9 +18,11 @@ namespace Movies
             Task taskActorCodes = taskActorNames.ContinueWith(x => ActorDirectorCodes.ReadAndGetData());
             Task taskLinks = taskTagCodes.ContinueWith(x => MovieLinks.ReadAndGet());
 
-            Task taskTagScores = Task.WhenAll(taskLinks, taskTagCodes).ContinueWith(x => TagScores.ReadAndGet());
+            Task taskTagScores = taskLinks.ContinueWith(x => TagScores.ReadAndGet());
 
-            Task taskMovieCodesDictionary = Task.WhenAll(taskRatings, taskActorCodes, taskTagScores).ContinueWith(x => MovieCodes.ReadAndGetData());
+            Task.WaitAll(taskRatings, taskActorCodes, taskTagScores);
+
+            Task taskMovieCodesDictionary = Task.Run(() => MovieCodes.ReadAndGetData());
             taskMovieCodesDictionary.Wait();
 
             var movieDictionary = MovieCodes.dictionary;
@@ -53,13 +55,16 @@ namespace Movies
                 foreach (var movie in movieDictionary)
                 {
                     var director = movie.Value.Director;
-                    directorsDictionary.AddOrUpdate(director,
+                    if (director != null)
+                    {
+                        directorsDictionary.AddOrUpdate(director,
                         new HashSet<Movie>(new Movie[] { movie.Value }),
                         (x, y) =>
                         {
                             y.Add(movie.Value);
                             return y;
                         });
+                    }
                 }
             });
             
@@ -83,14 +88,21 @@ namespace Movies
 
             Task.WaitAll(taskActorsDictionary, taskDirectorsDictionary, taskTagsDictionary);
 
-            using (MovieContext db = new MovieContext())
+            try
             {
-                foreach (var movie in movieDictionary)
+                using (MovieContext db = new MovieContext())
                 {
-                    db.Movies.Add(movie.Value);
-                }
+                    foreach (var movie in movieDictionary)
+                    {
+                        db.Movies.Add(movie.Value);
+                    }
 
-                db.SaveChanges();
+                    db.SaveChanges();
+                }
+            }
+            catch (Exception e)
+            {
+                var str = e.Message;
             }
         }
     }
