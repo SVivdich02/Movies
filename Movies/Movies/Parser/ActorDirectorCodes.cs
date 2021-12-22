@@ -53,7 +53,7 @@ namespace Movies
                     string IMDB_ID = str.Substring(0, index1);
                     string idDirector = str.Substring(index2 + 1, index3 - index2 - 1);
 
-                    if (ActorDirectorNames.dictionaryActor.ContainsKey(idDirector))
+                    if (ActorDirectorNames.dictionaryDirector.ContainsKey(idDirector))
                     {
                         dictionaryDirector.AddOrUpdate(IMDB_ID, ActorDirectorNames.dictionaryDirector[idDirector], (x, y) => y);
                     }

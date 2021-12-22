@@ -9,6 +9,11 @@ namespace Movies
 {
     class Calculation
     {
+        public static ConcurrentDictionary<string, Movie> movieDictionary = new ConcurrentDictionary<string, Movie>();
+        public static ConcurrentDictionary<Actor, HashSet<Movie>> actorsDictionary = new ConcurrentDictionary<Actor, HashSet<Movie>>();
+        public static ConcurrentDictionary<Director, HashSet<Movie>> directorsDictionary = new ConcurrentDictionary<Director, HashSet<Movie>>();
+        public static ConcurrentDictionary<Tag, HashSet<Movie>> tagsDictionary = new ConcurrentDictionary<Tag, HashSet<Movie>>();
+
         public static void Method()
         {
             Task taskActorNames = Task.Run(() => ActorDirectorNames.ReadAndGetData());
@@ -25,12 +30,8 @@ namespace Movies
             Task taskMovieCodesDictionary = Task.Run(() => MovieCodes.ReadAndGetData());
             taskMovieCodesDictionary.Wait();
 
-            var movieDictionary = MovieCodes.dictionary;
+            movieDictionary = MovieCodes.dictionary; 
             int a = 5;
-
-            var actorsDictionary = new ConcurrentDictionary<Actor, HashSet<Movie>>();
-            var directorsDictionary = new ConcurrentDictionary<Director, HashSet<Movie>>();
-            var tagsDictionary = new ConcurrentDictionary<Tag, HashSet<Movie>>();
 
             Task taskActorsDictionary = Task.Run(() => 
             {
@@ -87,6 +88,11 @@ namespace Movies
             });
 
             Task.WaitAll(taskActorsDictionary, taskDirectorsDictionary, taskTagsDictionary);
+
+            foreach (var movie in movieDictionary)
+            {
+                movie.Value.GetSimilar();
+            }
 
             try
             {

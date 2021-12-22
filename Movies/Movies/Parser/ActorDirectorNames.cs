@@ -21,20 +21,28 @@ namespace Movies
         }
         public static void Parse()
         {
-            Regex regex = new Regex("actor|director");
+            Regex regexActor = new Regex("actor|actress");
+            Regex regexDirector = new Regex("director");
 
             foreach (string str in output.GetConsumingEnumerable())
             {
-                if (regex.IsMatch(str))
+                if (regexActor.IsMatch(str) || regexDirector.IsMatch(str))
                 {
                     int index1 = str.IndexOf("\t");
-                    string actorID = str.Substring(0, index1);
+                    string personID = str.Substring(0, index1);
 
                     int index2 = str.IndexOf("\t", index1 + 1);
-                    string actorName = str.Substring(index1 + 1, index2 - index1 - 1);
+                    string personName = str.Substring(index1 + 1, index2 - index1 - 1);
 
-                    dictionaryActor.AddOrUpdate(actorID, new Actor(actorID, actorName), (x, y) => y);
-                    dictionaryDirector.AddOrUpdate(actorID, new Director(actorID, actorName), (x, y) => y);
+                    if (regexActor.IsMatch(str))
+                    {
+                        dictionaryActor.AddOrUpdate(personID, new Actor(personID, personName), (x, y) => y);
+                    }
+
+                    if (regexDirector.IsMatch(str))
+                    {
+                        dictionaryDirector.AddOrUpdate(personID, new Director(personID, personName), (x, y) => y);
+                    }
                 }
             }
         }
