@@ -1,0 +1,162 @@
+﻿@using Movies
+@using Microsoft.EntityFrameworkCore
+
+@page "/"
+
+<h1>Сервер для поиска фильмов по названию</h1>
+
+<div class="input-group">
+    <input type="text" class="form-control rounded" placeholder="Search" aria-label="Search"
+           aria-describedby="search-addon" @bind="ValueSearch" />
+    <button @onclick="() => FindMovie()" type="button" class="btn btn-outline-primary">Search</button>
+</div>
+
+<div align="center" class="container">
+    @if (searchMovie != null)
+    {
+        <div style="margin-bottom: 40px" class="col col-lg-4">
+            <div class="card h-100">
+                <img src=@Image
+                     class="card-img-top"
+                     style="object-fit:contain; height: 250px">
+                <div type="div" class="card-body">
+                    <h5 type="textH5" class="card-title">@searchMovie.Name</h5>
+                    <p type="textP" class="card-text" align="left">
+                        Rating:  @searchMovie.Rating <br>
+                        <br>
+                        Actors:
+                        @if (searchMovie.Actors != null)
+                        {
+                            <ul>
+                                @foreach (var actor in searchMovie.Actors)
+                                {
+                                    <li>@actor.Name</li>
+                                }
+                            </ul>
+                        }
+                        Director:
+                        @if (searchMovie.Director != null)
+                        {
+                            <ul>
+                                <li>@searchMovie.Director.Name</li>
+                            </ul>
+                        }
+                        Tags:
+                        @if (searchMovie.Tags != null)
+                        {
+                            <ul>
+                                @foreach (var tag in searchMovie.Tags)
+                                {
+                                    @(tag.Name + ", ")
+                                }
+                            </ul>
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+            @foreach (var sim in similar)
+            {
+                @if (sim != null)
+                {
+                    <div style="margin-bottom: 40px" class="col col-lg-4">
+                        <div class="card h-100">
+                            <div type="div" class="card-body">
+                                <a @onclick="() => GetMoviesAsync(sim.Name)">@sim.Name</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    }
+</div>
+
+
+        @code {
+            public string ValueSearch;
+            public Movie searchMovie;
+            public List<Movie> similar = new List<Movie>();
+            public string Image = "https://www.p-etalon.ru/global/images/prod/nophoto.png";
+
+            public async Task FindMovie()
+            {
+                await GetMovie(ValueSearch);
+            }
+
+            public async Task GetMovie(string movieName)
+            {
+                using (MovieContext db = new MovieContext())
+                {
+                    searchMovie = db.Movies.Include(x => x.Actors).Include(x => x.Tags).Include(x => x.Director).
+                        Where(x => x.Name == movieName).Single();
+
+                    if (searchMovie != null)
+                    {
+                        similar = new List<Movie>();
+                        await GetImageAsync(searchMovie.ID);
+
+                        foreach (var similarMovieId in searchMovie.Similar.Split(' '))
+                        {
+                            similar.Add(db.Movies.Include(x => x.Actors).Include(x => x.Tags).Include(x => x.Director).
+                                    FirstOrDefault(x => x.ID == similarMovieId));
+                        }
+                    }
+
+                }
+            }
+
+            private async Task GetImageAsync(string ttconst)
+            {
+                var client = new HttpClient();
+                var request = new HttpRequestMessage
+                {
+                    Method = HttpMethod.Get,
+                    RequestUri = new Uri($"https://imdb8.p.rapidapi.com/title/auto-complete?q={ttconst}"),
+                    Headers =
+                    {
+                        { "x-rapidapi-key", "c52a1ca29amsh6bfb99e075210f4p19de50jsn9d875c09c921" },
+                        { "x-rapidapi-host", "imdb8.p.rapidapi.com" },
+                    },
+                };
+
+                using (var response = await client.SendAsync(request))
+                {
+                    var body = await response.Content.ReadAsStringAsync();
+                    try
+                    {
+                        int startIndex = body.IndexOf("https");
+                        int endIndex = body.IndexOf("width", startIndex);
+                        Image = body.Substring(startIndex, (endIndex - startIndex) - 3);
+                    }
+                    catch
+                    {
+                        Image = "https://www.p-etalon.ru/global/images/prod/nophoto.png";
+                    }
+                }
+            }
+
+            public async Task GetMoviesAsync(string Name)
+            {
+                using (var db = new MovieContext())
+                {
+                    searchMovie = db.Movies.Include(x => x.Actors).
+                        Include(x => x.Director).Include(x => x.Tags).Where(x => x.Name.ToLower() == Name.ToLower()).Single();
+
+                    if (searchMovie != null)
+                    {
+                        Image = "https://www.p-etalon.ru/global/images/prod/nophoto.png";
+                        await GetImageAsync(searchMovie.ID);
+                        similar.Clear();
+                        foreach (var movieId in searchMovie.Similar.Split(' '))
+                        {
+                            similar.Add(db.Movies.Include(x => x.Actors).
+                                Include(x => x.Director).Include(x => x.Tags).FirstOrDefault(movie => movie.ID == movieId));
+                        }
+                    }
+                }
+            }
+        }
+
+
