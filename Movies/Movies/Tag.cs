@@ -7,10 +7,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Movies
 {
-    class Tag
+    public class Tag
     {
         [Key]
         public string Name { get; set; }
+        public HashSet<Movie> Movies { get; set; }
 
         public Tag() { }
 

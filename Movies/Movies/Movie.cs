@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Movies
 {
-    class Movie
+    public class Movie
     {
         [Key]
         public string ID { get; set; }
@@ -39,7 +39,6 @@ namespace Movies
             }
 
             var sorted = dictCompare.OrderByDescending(item => item.Value).Take(10).Select(item => item.Key + " ").ToList<string>();
-            //var sortedDict = (from item in dictCompare orderby item.Value ascending select item).Take(10);
 
             foreach (var movieID in sorted)
             {

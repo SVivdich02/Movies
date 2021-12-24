@@ -7,7 +7,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Movies
 {
-    class Director
+    public class Director
     {
         [Key]
         public string ID { get; set; }

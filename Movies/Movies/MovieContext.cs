@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Movies
 {
-    class MovieContext: DbContext
+    public class MovieContext: DbContext
     {
         public DbSet<Movie> Movies { get; set; }
         public DbSet<Actor> Actors { get; set; }
@@ -17,7 +17,6 @@ namespace Movies
 
         public MovieContext()
         {
-            Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 
